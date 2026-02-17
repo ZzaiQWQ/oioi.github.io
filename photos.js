@@ -10,13 +10,8 @@ window.MY_ALBUMS = [
     name: '我的猫咪 🐱',
     folder: 'cats',
     files: ['unnamed.jpg', 'b.jpg']
-  },
-  {
-    id: 'album3',
-    name: '人物相册 🐱',
-    folder: 'oio',
-    files: ['unnamed.jpg', 'b.jpg']
   }
 ];
+
 
 
