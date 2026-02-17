@@ -17,6 +17,6 @@ window.MY_ALBUMS = [
     folder: 'oio',
     files: ['unnamed.jpg', 'b.jpg']
   }
-
 ];
+
 
