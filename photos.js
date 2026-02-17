@@ -13,9 +13,10 @@ window.MY_ALBUMS = [
   },
   {
     id: 'album3',
-    name: '我的猫咪 🐱',
+    name: '人物相册 🐱',
     folder: 'oio',
     files: ['unnamed.jpg', 'b.jpg']
   }
 
 ];
+
