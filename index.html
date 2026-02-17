@@ -143,6 +143,98 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // ==== 新增：飘落特效组件 ====
+        const FallingParticles = ({ theme }) => {
+            const canvasRef = useRef(null);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                let animationFrameId;
+                let particles = [];
+                
+                const resize = () => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                };
+                window.addEventListener('resize', resize);
+                resize();
+
+                const isPink = theme === 'zzai';
+                const particleCount = isPink ? 30 : 50; // 樱花少一点更唯美，雪花多一点
+
+                // 初始化粒子
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        speed: Math.random() * 1.5 + 0.5,
+                        size: Math.random() * (isPink ? 4 : 2) + 2, // 樱花大一点
+                        oscillation: Math.random() * 2, // 左右摇摆幅度
+                        angle: Math.random() * Math.PI * 2, // 旋转角度
+                        spinSpeed: (Math.random() - 0.5) * 0.02
+                    });
+                }
+
+                const render = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    particles.forEach(p => {
+                        // 更新位置
+                        p.y += p.speed;
+                        
+                        // 樱花会有左右飘落的感觉，雪花相对垂直
+                        if (isPink) {
+                            p.x += Math.sin(p.y * 0.01 + p.oscillation) * 0.5;
+                            p.angle += p.spinSpeed;
+                        } else {
+                            p.x += Math.sin(p.y * 0.02) * 0.2; // 雪花微风
+                        }
+
+                        // 循环
+                        if (p.y > canvas.height) {
+                            p.y = -10;
+                            p.x = Math.random() * canvas.width;
+                        }
+                        if (p.x > canvas.width) p.x = 0;
+                        if (p.x < 0) p.x = canvas.width;
+
+                        // 绘制
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        
+                        if (isPink) {
+                            // 绘制樱花花瓣 (简单的旋转椭圆)
+                            ctx.rotate(p.angle);
+                            ctx.fillStyle = 'rgba(255, 183, 197, 0.6)';
+                            ctx.beginPath();
+                            // 绘制一个有点像花瓣的形状
+                            ctx.ellipse(0, 0, p.size, p.size / 1.8, 0, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else {
+                            // 绘制雪花/光点 (圆形)
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                            ctx.beginPath();
+                            ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        
+                        ctx.restore();
+                    });
+
+                    animationFrameId = requestAnimationFrame(render);
+                };
+                render();
+
+                return () => {
+                    window.removeEventListener('resize', resize);
+                    cancelAnimationFrame(animationFrameId);
+                };
+            }, [theme]);
+
+            return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[1]" />;
+        };
+
         const CursorEffect = ({ theme }) => {
             useEffect(() => {
                 const handleMove = (e) => {
@@ -168,6 +260,8 @@
             library: <><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /><path d="M2 11h20l-2 8H4l-2-8z" /></>,
             home: <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
             cloud: <path d="M17.5 19c3.037 0 5.5-2.463 5.5-5.5 0-2.613-1.826-4.799-4.256-5.352a7.001 7.001 0 0 0-13.488 0C2.826 8.701 1 10.887 1 13.5 1 16.537 3.463 19 6.5 19h11z" />,
+            // 新增：手机图标
+            phone: <><rect x="6" y="2" width="12" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12" y2="18" strokeWidth="2" strokeLinecap="round" /></>,
             monitor: <><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></>,
             folder: <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         };
@@ -503,14 +597,22 @@
             const [selectedPhoto, setSelectedPhoto] = useState(null);
             const [isWindowOpen, setIsWindowOpen] = useState(true);
             const [activeTab, setActiveTab] = useState('photos');
-            const [time, setTime] = useState(new Date()); // 🛠️ 修复：时间状态
+            const [time, setTime] = useState(new Date()); 
+            
+            // 🛠️ 新增：检测是否为手机端 (宽度小于768px)
+            const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+            useEffect(() => {
+                const handleResize = () => setIsMobile(window.innerWidth < 768);
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
             
             const [theme, setTheme] = useState(() => {
                 const savedTheme = localStorage.getItem('zzai-theme');
                 return savedTheme ? savedTheme : 'zzai';
             });
 
-            // 🛠️ 修复：时间更新逻辑
             useEffect(() => {
                 const timer = setInterval(() => setTime(new Date()), 1000);
                 return () => clearInterval(timer);
@@ -565,9 +667,21 @@
             return (
                 <div className={`desktop-wallpaper w-screen h-screen relative transition-all duration-700 ${theme === 'zzai' ? 'theme-zzai' : 'theme-sky'}`}>
                     <CursorEffect theme={theme} />
+                    {/* ==== 新增：插入飘落花瓣特效 ==== */}
+                    <FallingParticles theme={theme} />
                     
-                    <div className="absolute top-8 left-8 flex flex-col gap-8 z-0">
-                        <DesktopIcon label="我的电脑" icon={ICONS.monitor} theme={theme} isSvg={true} />
+                    {/* 调整：给图标增加 z-10 以免被 canvas 遮挡无法点击 */}
+                    <div className={isMobile 
+                        ? "absolute top-16 left-0 w-full grid grid-cols-4 gap-4 px-4 z-10 justify-items-center content-start" // 手机端：iOS 风格网格
+                        : "absolute top-8 left-8 flex flex-col gap-8 z-10" // 电脑端：左侧竖排
+                    }>
+                        {/* 🛠️ 修复：如果是手机端，显示“我的手机”和手机图标；电脑端保持不变 */}
+                        <DesktopIcon 
+                            label={isMobile ? "我的手机" : "我的电脑"} 
+                            icon={isMobile ? ICONS.phone : ICONS.monitor} 
+                            theme={theme} 
+                            isSvg={true} 
+                        />
                         <DesktopIcon label="回收站" icon="🗑️" theme={theme} />
                         <DesktopIcon label="照片库" icon="🌸" theme={theme} onClick={() => { setIsWindowOpen(true); setActiveTab('photos'); }} />
                         <DesktopIcon label="说明书" icon="📖" theme={theme} onClick={() => { setIsWindowOpen(true); setActiveTab('readme'); }} />
@@ -592,25 +706,39 @@
 
                     <nav className="fixed bottom-0 left-0 w-full h-14 bg-white/60 backdrop-blur-xl border-t border-white/30 flex items-center justify-center sm:justify-between px-8 z-50">
                         <div className="flex gap-6 items-center h-full">
-                            <div className={`w-9 h-9 rounded-full bg-gradient-to-tr ${themeBtnColor} shadow-md flex items-center justify-center text-white cursor-pointer hover:rotate-12 transition-transform`}>
-                                <Icon path={ICONS.os} className="w-5 h-5" />
-                            </div>
+                            {/* 🛠️ 改造：Home Button - 手机端显示 iPhone 圆形按钮，电脑端显示渐变图标 */}
+                            {isMobile ? (
+                                <div 
+                                    className="w-10 h-10 rounded-full bg-white border-4 border-gray-200 shadow-inner flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
+                                    onClick={() => setIsWindowOpen(!isWindowOpen)} 
+                                >
+                                    <div className="w-3.5 h-3.5 border-2 border-gray-300 rounded-[3px]"></div>
+                                </div>
+                            ) : (
+                                <div className={`w-9 h-9 rounded-full bg-gradient-to-tr ${themeBtnColor} shadow-md flex items-center justify-center text-white cursor-pointer hover:rotate-12 transition-transform`}>
+                                    <Icon path={ICONS.os} className="w-5 h-5" />
+                                </div>
+                            )}
+                            
                             {/* 🛠️ 优化：显示 Demo 模式提示 */}
                             {window.IS_DEMO_MODE && <div className="text-[10px] text-red-400 font-bold bg-white/50 px-2 rounded hidden sm:block">Demo Mode</div>}
                             <div className="h-6 w-[1px] bg-gray-400/30 hidden sm:block"></div>
                             
-                            <div 
-                                className={`relative flex items-center gap-2.5 px-4 h-[75%] rounded-xl transition-all duration-500 group cursor-pointer
-                                    ${isWindowOpen ? 'bg-white/40 shadow-sm ' + accentColor : 'text-gray-500 hover:text-gray-700 hover:bg-white/20'}
-                                `}
-                                onClick={() => setIsWindowOpen(!isWindowOpen)}
-                            >
-                                <Icon path={ICONS.library} className="w-5 h-5" />
-                                <span className="font-pixel font-bold text-xs hidden sm:block tracking-wider uppercase">Files</span>
-                                {isWindowOpen && (
-                                    <div className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full shadow-[0_0_8px] ${dotColor} shadow-current`}></div>
-                                )}
-                            </div>
+                            {/* 🛠️ 修复：手机端隐藏 FILES 按钮，只用 Home 键控制；电脑端保留该按钮 */}
+                            {!isMobile && (
+                                <div 
+                                    className={`relative flex items-center gap-2.5 px-4 h-[75%] rounded-xl transition-all duration-500 group cursor-pointer
+                                        ${isWindowOpen ? 'bg-white/40 shadow-sm ' + accentColor : 'text-gray-500 hover:text-gray-700 hover:bg-white/20'}
+                                    `}
+                                    onClick={() => setIsWindowOpen(!isWindowOpen)}
+                                >
+                                    <Icon path={ICONS.library} className="w-5 h-5" />
+                                    <span className="font-pixel font-bold text-xs hidden sm:block tracking-wider uppercase">Files</span>
+                                    {isWindowOpen && (
+                                        <div className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full shadow-[0_0_8px] ${dotColor} shadow-current`}></div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <div className="font-pixel text-gray-500 text-xs hidden sm:flex gap-4 items-center">
                             <span className={`hidden sm:inline-block animate-pulse uppercase tracking-[0.2em] font-black ${theme === 'zzai' ? 'text-pink-500' : 'text-blue-500'}`}>
