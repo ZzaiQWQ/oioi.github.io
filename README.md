@@ -20,7 +20,7 @@
 
 | 桌面全景 | 手机全景 | 相册详情 |
 | :---: | :---: | :---: |
-| <img src="https://zzaiqwq.github.io/oioi.github.io/images/travel/2.jpg" width="400"> | <img src="https://zzaiqwq.github.io/oioi.github.io/images/cats/unnamed.jpg" width="400"> | <img src="https://via.placeholder.com/400x250/ffffff/ffb7c5?text=Photo+Gallery" width="400"> |
+| <img src="https://zzaiqwq.github.io/oioi.github.io/images/travel/2.png" width="400"> | <img src="https://zzaiqwq.github.io/oioi.github.io/images/cats/unnamed.jpg" width="400"> | <img src="https://via.placeholder.com/400x250/ffffff/ffb7c5?text=Photo+Gallery" width="400"> |
 
 
 
