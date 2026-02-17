@@ -11,38 +11,16 @@
     
     <!-- 
       ==== 🚀 本地多相册配置说明 ====
-      
-      1. 文件结构示例：
-         /root
-           ├── index.html
-           ├── photos.js
-           └── images/
-                 ├── travel/   (对应下面的 folder: 'travel')
-                 │    ├── 1.jpg
-                 │    └── 2.jpg
-                 └── pets/     (对应下面的 folder: 'pets')
-                      └── cat.png
-
-      2. 在 photos.js 中写入以下内容：
-         window.MY_ALBUMS = [
-           {
-             name: "旅行日记 ✈️",
-             folder: "travel",  
-             files: ["1.jpg", "2.jpg"]
-           },
-           {
-             name: "毛孩子 🐱",
-             folder: "pets",
-             files: ["cat.png"]
-           }
-         ];
+      请查看 photos.js 了解如何配置。
     -->
     <script src="photos.js"></script>
 
     <!-- 👇 在线演示数据 (本地运行时请删除此 script 块) 👇 -->
     <script>
         // 如果没有 photos.js，这里提供演示用的多相册数据
-        if (!window.MY_ALBUMS) {
+        if (!window.MY_ALBUMS && !window.MY_PHOTOS) {
+            console.warn("未检测到 photos.js 或格式错误，已加载演示数据。");
+            window.IS_DEMO_MODE = true; // 标记演示模式
             window.MY_ALBUMS = [
                 {
                     name: "治愈风景 🏔️",
@@ -86,10 +64,10 @@
                         'hand': ['"Indie Flower"', 'cursive'],
                     },
                     colors: {
-                        'zzai': '#ff9eb5', // 调暗了粉色
-                        'zzai-dark': '#ff7593', // 调暗了粉色深色
-                        'sky-blue': '#7dc4e0', // 调暗了蓝色
-                        'sky-dark': '#009acd', // 调暗了蓝色深色
+                        'zzai': '#ff9eb5', 
+                        'zzai-dark': '#ff7593', 
+                        'sky-blue': '#7dc4e0', 
+                        'sky-dark': '#009acd', 
                     },
                     animation: {
                         'breathe': 'breathe 3s infinite alternate ease-in-out',
@@ -105,7 +83,6 @@
         body { 
             margin: 0; overflow: hidden; 
             font-family: 'M PLUS Rounded 1c', sans-serif;
-            /* 自定义光标 */
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ff7593" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/></svg>') 12 12, auto;
         }
 
@@ -113,7 +90,6 @@
             transition: all 0.5s ease;
             background-size: 50px 50px;
         }
-        /* 调暗了背景色，减少刺眼感 */
         .theme-zzai {
             background-color: #ffe0e9; 
             background-image: 
@@ -127,7 +103,6 @@
                 linear-gradient(90deg, rgba(100, 180, 230, 0.15) 1px, transparent 1px);
         }
 
-        /* 降低了窗口的不透明度，减少大面积纯白 */
         .glass-window {
             background: rgba(255, 255, 255, 0.70);
             backdrop-filter: blur(20px);
@@ -168,7 +143,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- 鼠标尾迹效果 ---
         const CursorEffect = ({ theme }) => {
             useEffect(() => {
                 const handleMove = (e) => {
@@ -189,7 +163,6 @@
             return null;
         };
 
-        // --- 图标定义 ---
         const ICONS = {
             os: <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />,
             library: <><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /><path d="M2 11h20l-2 8H4l-2-8z" /></>,
@@ -205,22 +178,18 @@
             </svg>
         );
 
-        // --- 桌面图标组件 ---
         const DesktopIcon = ({ label, icon, onClick, theme, isSvg = false }) => {
-            // 加深了图标颜色和边框，减少白底的不透明度
             const baseColor = theme === 'zzai' ? 'from-pink-100 to-white/80 text-pink-500 border-pink-200' : 'from-blue-100 to-white/80 text-blue-500 border-blue-200';
             return (
                 <div className="flex flex-col items-center gap-1 w-20 group cursor-pointer p-2 rounded hover:bg-white/30 transition-all duration-300" onClick={onClick}>
                     <div className={`w-13 h-13 bg-gradient-to-br ${baseColor} rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover:scale-110 group-hover:shadow-md transition-all border border-opacity-50`}>
                         {isSvg ? <Icon path={icon} className="w-8 h-8" /> : icon}
                     </div>
-                    {/* 文字背景更透明，文字颜色更深 */}
                     <span className="text-[10px] font-bold text-gray-700 bg-white/50 px-2 py-0.5 rounded-full shadow-sm backdrop-blur-sm whitespace-nowrap border border-white/30">{label}</span>
                 </div>
             );
         };
 
-        // --- 待办事项便签 ---
         const TodoMemo = () => {
             const [tasks, setTasks] = useState([]);
             const taskPool = [
@@ -233,7 +202,6 @@
                 setTasks(taskPool[index].map((text, i) => ({ id: i, text, done: false })));
             }, []);
             const toggle = (id) => setTasks(tasks.map(t => t.id === id ? {...t, done: !t.done} : t));
-            // 调暗了便签的黄色背景
             return (
                 <div className="fixed top-8 right-8 w-60 bg-gradient-to-b from-[#fef3c7] to-[#fffbeb] shadow-xl transform rotate-1 p-5 font-hand text-gray-700 hidden lg:block z-[100] border-l-4 border-[#fcd34d] transition-all duration-300 hover:rotate-0 hover:scale-110 origin-top-right">
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-8 bg-white/40 rotate-1 shadow-sm rounded"></div>
@@ -252,7 +220,6 @@
             );
         };
 
-        // --- 像素猫组件 ---
         const RealisticPixelCat = () => {
             const [x, setX] = useState(window.innerWidth > 0 ? window.innerWidth - 250 : 500);
             const [actionState, setActionState] = useState('idle');
@@ -365,9 +332,7 @@
             );
         };
 
-        // --- 主应用窗口 ---
         const MainAppWindow = ({ activeTab, onTabChange, onClose, albums, currentAlbum, setCurrentAlbum, setSelectedPhoto, theme }) => {
-            // 侧边栏和高亮颜色加深
             const sidebarHighlight = theme === 'zzai' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700';
             const headerGradient = theme === 'zzai' ? 'from-white/60 to-pink-100/40' : 'from-white/60 to-blue-100/40';
             const folderColor = theme === 'zzai' ? 'bg-pink-100/80 text-pink-500' : 'bg-blue-100/80 text-blue-500';
@@ -395,10 +360,18 @@
                             <Icon path={ICONS.library} className="w-3.5 h-3.5 shrink-0" />
                             <span className="truncate">{getBreadcrumb()}</span>
                         </div>
-                        <div className="w-10"></div>
+                        {/* 🛠️ 修复：手机端导航按钮 (原本在手机端无法切换Tab) */}
+                        <div className="flex md:hidden gap-3">
+                            <div onClick={() => handlePhotoTabClick()} className={`p-1 rounded cursor-pointer ${activeTab === 'photos' ? 'bg-white/50 text-gray-800' : 'text-gray-400'}`}>
+                                <Icon path={ICONS.library} className="w-4 h-4" />
+                            </div>
+                            <div onClick={() => onTabChange('readme')} className={`p-1 rounded cursor-pointer ${activeTab === 'readme' ? 'bg-white/50 text-gray-800' : 'text-gray-400'}`}>
+                                📖
+                            </div>
+                        </div>
+                        <div className="w-10 hidden md:block"></div>
                     </div>
                     <div className="flex flex-1 overflow-hidden">
-                        {/* 侧边栏背景透明度降低 */}
                         <div className="w-52 bg-white/30 border-r border-white/40 hidden md:flex flex-col p-5 gap-2.5 text-sm text-gray-700 font-pixel font-bold">
                             <div className="font-bold text-gray-500 text-[10px] uppercase mb-1 px-2 tracking-widest">Navigation</div>
                             <div 
@@ -530,41 +503,36 @@
             const [selectedPhoto, setSelectedPhoto] = useState(null);
             const [isWindowOpen, setIsWindowOpen] = useState(true);
             const [activeTab, setActiveTab] = useState('photos');
+            const [time, setTime] = useState(new Date()); // 🛠️ 修复：时间状态
             
-            // 修改这里：初始化时优先从 localStorage 读取主题
             const [theme, setTheme] = useState(() => {
                 const savedTheme = localStorage.getItem('zzai-theme');
                 return savedTheme ? savedTheme : 'zzai';
             });
 
-            // 新增：监听 theme 变化并保存到 localStorage
+            // 🛠️ 修复：时间更新逻辑
+            useEffect(() => {
+                const timer = setInterval(() => setTime(new Date()), 1000);
+                return () => clearInterval(timer);
+            }, []);
+
             useEffect(() => {
                 localStorage.setItem('zzai-theme', theme);
             }, [theme]);
 
             useEffect(() => {
-                // ----------------------------------------------------
-                // 📂 核心逻辑：加载多相册数据
-                // ----------------------------------------------------
                 const BASE_PATH = 'images/';
-
                 let albumsData = [];
 
                 if (window.MY_ALBUMS && Array.isArray(window.MY_ALBUMS)) {
-                    // 新版：读取相册列表
                     albumsData = window.MY_ALBUMS.map(albumConfig => {
                         const folderName = albumConfig.folder || '';
-                        
-                        // 处理该相册下的照片
                         const photos = (albumConfig.files || []).map((filename, i) => {
-                            // 构造路径： images/文件夹名/文件名
-                            // 如果文件名已经是 http 开头，就不加路径
                             const isWebUrl = filename.startsWith('http') || filename.startsWith('data:');
                             const fullUrl = isWebUrl 
                                 ? filename 
-                                : `${BASE_PATH}${folderName}/${filename}`; // e.g. images/travel/1.jpg
+                                : `${BASE_PATH}${folderName}/${filename}`; 
 
-                            // 提取标题
                             let title = '未命名';
                             try {
                                 const parts = filename.split('/');
@@ -572,36 +540,21 @@
                                 title = rawName.split('.')[0] || 'Image';
                                 title = decodeURIComponent(title);
                             } catch (e) {}
-
                             return { url: fullUrl, title: title };
                         });
-
-                        return {
-                            name: albumConfig.name || folderName || '未命名相册',
-                            photos: photos
-                        };
+                        return { name: albumConfig.name || folderName || '未命名相册', photos: photos };
                     });
                 } else if (window.MY_PHOTOS) {
-                    // 兼容旧版：如果只有旧的 MY_PHOTOS 数组，就把它当成一个“默认相册”
                     const legacyPhotos = window.MY_PHOTOS.map((filename, i) => {
                          const fullUrl = (filename.startsWith('http') || filename.startsWith('data:'))
                             ? filename 
                             : BASE_PATH + filename;
                          return { url: fullUrl, title: 'Photo ' + (i+1) };
                     });
-                    
-                    albumsData = [{
-                        name: "默认相册",
-                        photos: legacyPhotos
-                    }];
+                    albumsData = [{ name: "默认相册", photos: legacyPhotos }];
                 } else {
-                    // 空状态
-                     albumsData = [{
-                        name: "示例相册",
-                        photos: []
-                    }];
+                     albumsData = [{ name: "示例相册", photos: [] }];
                 }
-
                 setAlbums(albumsData);
             }, []);
 
@@ -642,6 +595,8 @@
                             <div className={`w-9 h-9 rounded-full bg-gradient-to-tr ${themeBtnColor} shadow-md flex items-center justify-center text-white cursor-pointer hover:rotate-12 transition-transform`}>
                                 <Icon path={ICONS.os} className="w-5 h-5" />
                             </div>
+                            {/* 🛠️ 优化：显示 Demo 模式提示 */}
+                            {window.IS_DEMO_MODE && <div className="text-[10px] text-red-400 font-bold bg-white/50 px-2 rounded hidden sm:block">Demo Mode</div>}
                             <div className="h-6 w-[1px] bg-gray-400/30 hidden sm:block"></div>
                             
                             <div 
@@ -662,7 +617,8 @@
                                 ● System Online
                             </span>
                             <div className="bg-white/50 px-4 py-1.5 rounded-full shadow-sm border border-white/30 text-gray-800 font-bold tabular-nums">
-                                {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                {/* 🛠️ 修复：使用 time 状态来更新时间 */}
+                                {time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                             </div>
                         </div>
                     </nav>
